@@ -75,12 +75,12 @@ public class TestFileManagerAutomation {
 
         sectionRoot = coreSession.createDocumentModel("/", "THE-SECTION-ROOT", "SectionRoot");
         sectionRoot = coreSession.createDocument(sectionRoot);
-        
+
         coreSession.save();
     }
-    
+
     protected FileImporterContext buildContextForTestFile(DocumentModel parent) throws Exception {
-        
+
         File f = FileUtils.getResourceFileFromContext(TEST_FILE);
 
         Blob input = Blobs.createBlob(f, "application/pdf");
@@ -88,7 +88,7 @@ public class TestFileManagerAutomation {
         FileImporterContext context = FileImporterContext.builder(coreSession, input, parent.getPathAsString())
                                                          .overwrite(true)
                                                          .build();
-        
+
         return context;
     }
 
@@ -100,41 +100,40 @@ public class TestFileManagerAutomation {
         // Our service should return null
         DocumentModel doc = fileManagerAutomation.createOrUpdate(context);
         assertNull(doc);
-        
+
         // But the whole FileManager service should create a "File"
         doc = fileManager.createOrUpdateDocument(context);
         assertNotNull(doc);
         assertEquals("File", doc.getType());
-        
+
     }
-    
+
     @Test
     @Deploy("org.nuxeo.ecm.automation.scripting")
     @Deploy("nuxeo.filemanager.automation.nuxeo-filemanager-automation-core:test-return-a-section.xml")
-    public void testCreateDependingOnParentType() throws Exception {//shouldReturnTheCorrectDocType
+    public void testCreateDependingOnParentType() throws Exception {// shouldReturnTheCorrectDocType
 
         FileImporterContext context = buildContextForTestFile(sectionRoot);
-        
+
         // In a section root
         DocumentModel doc = fileManagerAutomation.createOrUpdate(context);
         assertNotNull(doc);
         assertEquals("Section", doc.getType());
-        
+
         // Not in a section root
         context = buildContextForTestFile(folder);
         doc = fileManagerAutomation.createOrUpdate(context);
         assertNull(doc);
-        
-        
+
     }
-    
+
     @Test
     @Deploy("org.nuxeo.ecm.automation.scripting")
     @Deploy("nuxeo.filemanager.automation.nuxeo-filemanager-automation-core:test-return-a-section-with-properties.xml")
-    public void testCreateWithProperties() throws Exception {//shouldReturnTheCorrectDocType
+    public void testCreateWithProperties() throws Exception {// shouldReturnTheCorrectDocType
 
         FileImporterContext context = buildContextForTestFile(sectionRoot);
-        
+
         // In a section root
         DocumentModel doc = fileManagerAutomation.createOrUpdate(context);
         assertNotNull(doc);
@@ -144,7 +143,7 @@ public class TestFileManagerAutomation {
         assertEquals("THE TITLE", doc.getTitle());
         String desc = (String) doc.getPropertyValue("dc:description");
         assertEquals("THE DESC", desc);
-        
+
     }
 
 }

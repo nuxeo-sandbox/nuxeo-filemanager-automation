@@ -23,16 +23,16 @@ import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.platform.filemanager.api.FileImporterContext;
 
 public interface FileImporterAutomationService {
-    
+
     public static final String CALLBACK_CTX_VAR_NAME = "FileImporterAutomation_Result";
-    
+
     public static final String CALLBACK_PARAM_PARENT_PATH = "parentPath";
-    
+
     public static final String CALLBACK_PARAM_PARENT_TYPE = "parentType";
-    
+
     // If null or "" => no creation, move to next importer plugin
     public static final String CALLBACK_RESULT_DOCTYPE = "docType";
-    
+
     // Optional
     public static final String CALLBACK_RESULT_PROPERTIES = "properties";
 

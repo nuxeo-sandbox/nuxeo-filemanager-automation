@@ -22,15 +22,14 @@ import org.nuxeo.common.xmap.annotation.XNode;
 import org.nuxeo.common.xmap.annotation.XObject;
 
 /**
- * 
  * @since 10.10
  */
 @XObject("configuration")
 public class FileImporterAutomationDescriptor {
-        
+
     @XNode("defaultChain")
     protected String chainId;
-    
+
     String getChainId() {
         return chainId;
     }
