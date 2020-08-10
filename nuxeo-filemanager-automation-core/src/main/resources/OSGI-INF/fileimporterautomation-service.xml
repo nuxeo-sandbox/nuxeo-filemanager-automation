@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<component name="nuxeo.filemanager.automation.FileImporterAutomationService" version="1.0">
+
+  <implementation class="nuxeo.filemanager.automation.FileImporterAutomationServiceImpl" />
+
+  <service>
+    <provide interface="nuxeo.filemanager.automation.FileImporterAutomationService" />
+  </service>
+
+  <extension-point name="configuration">
+    <object class="nuxeo.filemanager.automation.FileImporterAutomationDescriptor" />
+  </extension-point>
+
+  <!-- Default contrib. No chain. The plugin will return null => Nuxeo will move to the next FileImporter plugin -->
+  <extension target="nuxeo.filemanager.automation.FileImporterAutomationService" point="configuration">
+    <configuration>
+      <defaultChain></defaultChain>
+    </configuration>
+  </extension>
+
+</component>

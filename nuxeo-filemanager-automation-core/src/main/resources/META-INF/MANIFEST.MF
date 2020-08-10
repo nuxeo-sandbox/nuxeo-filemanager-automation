@@ -1,0 +1,10 @@
+Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: .
+Manifest-Version: 1.0
+Bundle-Vendor: nuxeo.filemanager.automation
+Bundle-Version: 1.0.0
+Bundle-Name: nuxeo-filemanager-automation-core
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: nuxeo.filemanager.automation.nuxeo-filemanager-automation-core;singleton=true
+Nuxeo-Component: OSGI-INF/file-manager-contrib.xml,
+ OSGI-INF/fileimporterautomation-service.xml

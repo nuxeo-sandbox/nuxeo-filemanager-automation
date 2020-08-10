@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name="uxeo.filemanager.automation.test.return.section.with.properties">
+
+  <!-- Override default contrib -->
+  <require>nuxeo.filemanager.automation.FileImporterAutomationService</require>
+  <extension target="nuxeo.filemanager.automation.FileImporterAutomationService" point="configuration">
+    <configuration>
+      <defaultChain>javascript.testReturnSection</defaultChain>
+    </configuration>
+  </extension>
+
+  <extension target="org.nuxeo.automation.scripting.internals.AutomationScriptingComponent" point="operation">
+    <scriptedOperation id="javascript.testReturnSection">
+      <inputType>Blob</inputType>
+      <outputType>Blob</outputType>
+      <category>javascript</category>
+      <param name="parentPath" type="string"/>
+      <param name="parentType" type="string"/>
+      <description></description>
+      <script><![CDATA[function run(input, params) {
+
+        ctx.FileImporterAutomation_Result = null;
+        if(params.parentType && params.parentType === "SectionRoot") {
+          var result = {
+            "docType": "Section",
+            "properties": {
+              "dc:title": "THE TITLE",
+              "dc:description": "THE DESC"
+            }
+          };
+          ctx.FileImporterAutomation_Result = JSON.stringify(result);
+        }
+        
+        return input;
+      
+      }]]></script>
+    </scriptedOperation>
+  </extension>
+
+</component>
