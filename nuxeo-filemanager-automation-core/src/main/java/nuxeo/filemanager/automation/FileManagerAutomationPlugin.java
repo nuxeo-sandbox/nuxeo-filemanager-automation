@@ -7,7 +7,8 @@ import org.nuxeo.ecm.platform.filemanager.service.extension.AbstractFileImporter
 import org.nuxeo.runtime.api.Framework;
 
 /**
- * This class is called by the File Manager, and declared in the XML extension
+ * This class is called by the File Manager, and declared in the XML extension.
+ * It follows the File Manager logic and returns either a document or null.
  * 
  * @since 10.10
  */
