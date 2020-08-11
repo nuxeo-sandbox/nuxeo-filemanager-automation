@@ -1,5 +1,5 @@
 # nuxeo-filemanager-automation
-[![Build Status](https://qa.nuxeo.org/jenkins/buildStatus/icon?job=Sandbox/sandbox_filemanager-automation-master)](https://qa.nuxeo.org/jenkins/job/Sandbox/job/sandbox_filemanager-automation-master/)
+[![Build Status](https://qa.nuxeo.org/jenkins/buildStatus/icon?job=Sandbox/sandbox_nuxeo-filemanager-automation-master)](https://qa.nuxeo.org/jenkins/job/Sandbox/job/sandbox_nuxeo-filemanager-automation-master/)
 
 This is **W**ork **I**n **P**rogress. Mainly, this document has to be correctly written.
 
