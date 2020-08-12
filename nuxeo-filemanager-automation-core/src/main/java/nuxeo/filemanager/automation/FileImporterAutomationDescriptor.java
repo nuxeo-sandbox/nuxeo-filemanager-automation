@@ -30,7 +30,7 @@ public class FileImporterAutomationDescriptor {
     @XNode("defaultChain")
     protected String chainId;
 
-    String getChainId() {
+    public String getChainId() {
         return chainId;
     }
 
