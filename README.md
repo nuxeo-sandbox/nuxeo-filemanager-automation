@@ -118,7 +118,7 @@ Remember tyhe ID of a chain is prefixed with `javascript.` it is is a JS Automat
 ```
 
 
-## About the FileManager and this Plugin
+## FileManager and Priorities
 The [FileManager](https://doc.nuxeo.com/nxdoc/file-manager/) is a Nuxeo service that creates a document for a blob. The logic for deciding which type of document to create (File, Picture, ...) is based on plugins which have a priority order and filter(s).
 
 Here, our plugin, by default:
@@ -152,13 +152,18 @@ To change this behavior, copy/paste this declaration in your Studio project and 
 </extension>
 ```
 
-## About Performance
-**WARNING**: As this plugin calls automation, using it at time of massive import will slow the system (compared to no nuxeo-filemanager-automation plugin installed), because of the overall cost of calling Automation for every file.
+## WARNINGS
+
+#### Errors in the Automation Chain Callback
+Make 100% sure the automation chain called by the plugin has no error. It is difficult to investigate automation errors in this context.
+
+#### Performance
+As this plugin calls automation, using it at time of massive import will slow the system (compared to no nuxeo-filemanager-automation plugin installed), because of the overall cost of calling Automation for every file.
 
 Of course, an easy way to change that is to move the logic built in automation to a Java plugin (and remove the XML contribution)
 
 
-# Build-Installation
+## Build-Installation
 
 ```
 git clone https://github.com/nuxeo-filemanager-automation.git
@@ -177,7 +182,7 @@ cd /path/to/nuxeo/bin/directory
 Notice: The `-s` is required because we are installing a *snapshot* plugin on  *release* platform.
 
 
-# Support
+## Support
 
 **These features are not part of the Nuxeo Production platform, they are not supported**
 
@@ -185,11 +190,11 @@ These solutions are provided for inspiration and we encourage customers to use t
 
 This is a moving project (no API maintenance, no deprecation process, etc.) If any of these solutions are found to be useful for the Nuxeo Platform in general, they will be integrated directly into the platform, not maintained here.
 
-# Licensing
+## Licensing
 
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-# About Nuxeo
+## About Nuxeo
 
 Nuxeo dramatically improves how content-based applications are built, managed and deployed, making customers more agile, innovative and successful. Nuxeo provides a next generation, enterprise ready platform for building traditional and cutting-edge content-oriented applications. Combining a powerful application development environment with SaaS-based tools and a modular architecture, the Nuxeo Platform and Products provide clear business value to some of the most recognizable brands including Verizon, Electronic Arts, Sharp, FICO, the U.S. Navy, and Boeing. Nuxeo is headquartered in New York and Paris.
 
