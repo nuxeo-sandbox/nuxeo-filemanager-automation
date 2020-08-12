@@ -167,8 +167,7 @@ public class FileImporterAutomationServiceImpl extends DefaultComponent implemen
             doc = session.createDocument(doc);
 
         } catch (OperationException | IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new NuxeoException("Failed to run the callback chain", e);
         }
 
         return doc;
