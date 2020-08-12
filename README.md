@@ -171,8 +171,10 @@ The plugin is available via the public market place. If you have a valid subscri
 
 ```
 cd /path/to/nuxeo/bin/directory
-./nuxeoctl mp-install nuxeo-filemanager-automation
+./nuxeoctl mp-install -s nuxeo-filemanager-automation
 ```
+
+Notice: The `-s` is required because we are installing a *snapshot* plugin on  *release* platform.
 
 
 # Support
