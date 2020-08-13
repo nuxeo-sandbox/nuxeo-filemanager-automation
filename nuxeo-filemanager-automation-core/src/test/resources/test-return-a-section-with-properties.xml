@@ -11,8 +11,8 @@
 
   <extension target="org.nuxeo.automation.scripting.internals.AutomationScriptingComponent" point="operation">
     <scriptedOperation id="javascript.testReturnSection">
-      <inputType>Blob</inputType>
-      <outputType>Blob</outputType>
+      <inputType>blob</inputType>
+      <outputType>blob</outputType>
       <category>javascript</category>
       <param name="parentPath" type="string"/>
       <param name="parentType" type="string"/>
