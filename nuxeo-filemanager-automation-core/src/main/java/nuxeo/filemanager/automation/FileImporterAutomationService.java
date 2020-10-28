@@ -26,7 +26,7 @@ public interface FileImporterAutomationService {
 
     public static final String CALLBACK_CTX_VAR_NAME = "FileImporterAutomation_Result";
 
-    public static final String CALLBACK_PARAM_PARENT_PATH = "partent_path";
+    public static final String CALLBACK_PARAM_PARENT_PATH = "parent_path";
 
     public static final String CALLBACK_PARAM_PARENT_TYPE = "parent_type";
 
