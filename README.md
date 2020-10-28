@@ -29,9 +29,10 @@ Create an automation chain. We recommend JavaScript automation (more flexible wi
 
 * The chain receives the `blob` as input, and must return it.
 * Declare the parameters the chain receives (passed by the plugin)
-  * `parentPath`: Full path of the parent where the current document is to be created
-  * `parentType` is the document type of the parent where the current document is to be created
-* In the chain, check/test the context (`parentPath`, `parentType`, you can also load the parent if you need to test more properties, using `Repository.GetDocument`, typically), and return the values in the `FileImporterAutomation_Result` context variable
+  * `parent_path`: Full path of the parent where the current document is to be created
+  * `parent_type` is the document type of the parent where the current document is to be created
+  * *WARNING* You must explicitely declare these parameteres in the "Parameters" tab of your chain editor in Studio
+* In the chain, check/test the parameters (`parent_path`, `parent_type`, you can also load the parent if you need to test more properties, using `Repository.GetDocument`, typically), and return the values in the `FileImporterAutomation_Result` context variable
 * About this `FileImporterAutomation_Result` context variable:
   * It is expected by the plugin as a **JSON object as string** with
     * `"docType"`: The type of document to create
@@ -49,7 +50,7 @@ Create an automation chain. We recommend JavaScript automation (more flexible wi
 function run(input, params) {
   // Initialize the result
   ctx. FileImporterAutomation_Result = null;
-  if(params.parentType === "DeliverableFolder") {
+  if(params.parent_type === "DeliverableFolder") {
     if(input.getMimeType() === "image/jpg") {
       ctx. FileImporterAutomation_Result = "{\"docType\": \"CustomDesign\"}";
     }
@@ -63,7 +64,7 @@ function run(input, params) {
 function run(input, params) {
   // Initialize the result
   ctx. FileImporterAutomation_Result = null;
-  if(params.parentType === "DeliverableFolder") {
+  if(params.parent_type === "DeliverableFolder") {
     if(input.getMimeType() === "image/jpg") {
       var result = {
         "docType": "CustomDesign",
@@ -85,7 +86,7 @@ function run(input, params) {
 function run(input, params) {
   // Initialize the result
   ctx. FileImporterAutomation_Result = null;
-  if(params.parentPath.indexOf("/SpecialFolder/") > -1) {
+  if(params.parent_path.indexOf("/SpecialFolder/") > -1) {
     if(input.getMimeType() === "image/jpg") {
       ctx. FileImporterAutomation_Result = "{\"docType\": \"CustomDesign\"}";
     }
