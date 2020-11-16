@@ -2,10 +2,18 @@
 <component name="nuxeo.filemanager.automation.filemanager" version="1.0">
 
   <extension target="org.nuxeo.ecm.platform.filemanager.service.FileManagerService" point="plugins">
-  
-    <plugin name="ImporterWithAutomation" class="nuxeo.filemanager.automation.FileManagerAutomationPlugin" order="0">
+
+    <plugin name="ImporterWithAutomation" class="nuxeo.filemanager.automation.FileManagerAutomationPlugin"
+      order="0">
       <filter>.*</filter>
     </plugin>
+
+    <!-- Warning: No lists here, see Nuxeo doc: "The latest registered folder importer will be used in place of any other 
+      previously registered folder importer.
+      When no callback automation chain is provided, pass the creation back to the AbstractFolderImporter
+    -->
+    <folderImporter name="FolderImporterWithAutomation"
+      class="nuxeo.filemanager.automation.FolderImporter" />
   </extension>
 
 </component>

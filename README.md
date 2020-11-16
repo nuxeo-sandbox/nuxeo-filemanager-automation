@@ -1,13 +1,15 @@
 # nuxeo-filemanager-automation
 [![Build Status](https://qa.nuxeo.org/jenkins/buildStatus/icon?job=Sandbox/sandbox_nuxeo-filemanager-automation-master)](https://qa.nuxeo.org/jenkins/job/Sandbox/job/sandbox_nuxeo-filemanager-automation-master/)
 
-This is **W**ork **I**n **P**rogress. Mainly, this document has to be correctly written.
-
 
 ## About the Plugin
-nuxeo-filemanager-automation is a plugin that contributes the [FileManager](https://doc.nuxeo.com/nxdoc/file-manager/) (see below), allowing for calling an automation chain when a file is imported. Typically, Nuxeo's FileManager is called to create a document of a certain type from a blob. This happens mainly when a user drag-n-drops file(s) in the UI (and does not choose "set properties"), when calling the `FileManager.Import` operation, etc.
+nuxeo-filemanager-automation is a plugin that contributes the [FileManager](https://doc.nuxeo.com/nxdoc/file-manager/) (see below), allowing for calling an automation chain when a file/folder is imported.
+
+* When importing a *file*, typically, Nuxeo's FileManager is called to create a document of a certain type from a blob. This happens mainly when a user drag-n-drops file(s) in the UI (and does not choose "set properties"), when calling the `FileManager.Import` operation, etc.
 
 The chain must then tell the plugin which type of document to create. It also can, optionally, set properties. This allows for tuning/configuring the system in Nuxeo Studio. Notice (see below) that the chain can ignore the call, which means the FileManager will call the next plugin until one returns a valid document. So, for example, if the user drops a .pdf, your chain may decide to create a `MyCustomDocType` document based on the context, or ignore the call and let Nuxeo creates a `File` document.
+
+* When importing a Folderish (typically: via Nuxeo Drive or a connector), Nuxeo creates a `Folder` by default (there is no plugin chain mechanism as we have for a file). The callback chain must create the Folderish document (or return `null`, Nuxeo will then create a `Folder`)
 
 #### About Nuxeo's [FileManager](https://doc.nuxeo.com/nxdoc/file-manager/)
 It is a Nuxeo service that creates a document for a blob. The logic for deciding which type of document to create (File, Picture, ...) is based on *plugins* which have an order property and filters:
@@ -16,27 +18,32 @@ It is a Nuxeo service that creates a document for a blob. The logic for deciding
 * The filters allow for filtering based on the blob's mime-type. So, for example, if you have a FileManager plugin that should act only for JPEG images, you will add the image/jpeg filter
 * When a blob is imported, the FileManager calls the plugins whose filter(s) match the mime-type, one after the other, until one creates a document.
 
+It can also be configured for creating a specific document type for a `Folderish`, with no cascade of plugins, only one "FolderImporter" can be set.
+
 
 ## Using the Plugin
 
-To use it you need to
+1. For handling blob import => create an automation chain, handle the specific parameters received and set a specific context variable with the values you want to use for the creation
+2. For handling creation of `Folderish` => create an automation chain that receives the parent container, create the `Folderish` of the type you wish and return it (or null and Nuxeo will create a `Folder`)
+3. Contribute the XML extension that tells the plugin to use your automation chain(s)
 
-1. Create an automation chain. Handle specific parameters received and set a specific context variable with the values you want to use for the creation
-2. Contribute the XML extension that tells the plugin to use your automation chain
+Notice you can set one and/or the other (2 callback chains, or only one for files or only one for Folderish)
 
-### 1. Create the Callback Automation Chain
-Create an automation chain. We recommend JavaScript automation (more flexible with conditions)
+### 1. Create the Callback Automation Chain to Handle Files
+(optional, you can have juste a FolderImporter callback)
+
+We recommend JavaScript automation (more flexible with conditions)
 
 * The chain receives the `blob` as input, and must return it.
 * Declare the parameters the chain receives (passed by the plugin)
   * `parent_path`: Full path of the parent where the current document is to be created
   * `parent_type` is the document type of the parent where the current document is to be created
-  * *WARNING* You must explicitely declare these parameteres in the "Parameters" tab of your chain editor in Studio
+  * *WARNING* You must explicitly declare these parameters in the "Parameters" tab of your chain editor in Studio
 * In the chain, check/test the parameters (`parent_path`, `parent_type`, you can also load the parent if you need to test more properties, using `Repository.GetDocument`, typically), and return the values in the `FileImporterAutomation_Result` context variable
 * About this `FileImporterAutomation_Result` context variable:
   * It is expected by the plugin as a **JSON object as string** with
-    * `"docType"`: The type of document to create
-    * `"properties"`: a JSON object to setup the fields
+    * `"docType"`: The type of document to create.
+    * `"properties"`: a JSON object to setup the fields. Optional.
  * If you...
    * don't return the context variable,
    * or you set it to `null`,
@@ -94,7 +101,95 @@ function run(input, params) {
 }
 ```
 
-### 2. Contribute the Plugin's Extension point
+### 2. Create the Callback Automation Chain to Handle `Folderish`
+(optional, you can have juste a FileImporter callback)
+
+We recommend JavaScript automation (more flexible with conditions)
+
+* The chain receives the parent `document` as input, returns `document`, the created Folderish.
+* Declare the parameter the chain receives (passed by the plugin)
+  * `title`: the title of the `Folderish` to create. This is the name of the folder the user uses on their Desktop.
+  * *WARNING* You must explicitly declare this parameter in the "Parameters" tab of your chain editor in Studio
+* In the chain, check/test the input, create the `Folderish` accordingly and return it.
+
+#### Examples
+* This JS creates a `DesignsContainer` if the parent's path contains "/Designs". Else, it creates a `Folder`:
+
+```
+function run(input, params) {
+
+  var folderishDoc = null;
+  
+  if(input.path.indexOf("/Designs" > -1) {
+    folderishDoc = Document.Create(
+	   input, {
+	     'type': "DesignsContainer",
+	     'name': params.title,
+	     'properties': {
+	       "dc:title": params.title,
+	       "dc:description": "Created by the FolderImporterCallback chain"
+	     }
+	   }
+	 );
+  }
+  
+  return folderishDoc;
+}
+```
+
+* Here we create different types of containers depending on the context:
+
+```
+function run(input, params) {
+
+  var folderish, docType;
+    
+  folderish = null;
+  // In this example we have 3 custom Folderish types
+  // Depending on the parent type and path, we create one or the other
+  // Also, we have special naming convention
+  if(params.title === "SpecialDocs") {
+    docType = "Folder";
+  } else {
+    switch (input.type) {
+      case "Workspace":
+        if(input.path.indexOf("/Assets") > -1) {
+          docType = "AssetsContainer";
+        } else {
+          docType = "ClaimsContainer";
+        }
+        break;
+
+      case "Folder":
+        if(input.path.indexOf("/SpecialDocs") > -1) {
+          docType = "CasesContainer";
+        } else {
+          docType = "ClaimsContainer";
+        }
+        break;
+
+      default:
+        docType = "Folder";
+        break;
+    }
+  }
+  
+  folderish = Document.Create(
+    input, {
+      'type': docType,
+      'name': params.title,
+      'properties': {
+        "dc:title": params.title,
+        "dc:description": "Created by the FolderImporterCallback chain"
+      }
+    }
+  );
+
+  return folderish;
+}
+```
+
+### 3. Contribute the Plugin's Extension point
 
 In studio, add the following new [XML extension](https://doc.nuxeo.com/studio/advanced-settings/).
 
@@ -103,11 +198,24 @@ In studio, add the following new [XML extension](https://doc.nuxeo.com/studio/ad
            point="configuration">
   <configuration>
     <defaultChain>HERE-YOUR-CHAIN-ID</defaultChain>
+    <folderImporterChain>HERE-YOUR-CHAIN-ID</folderImporterChain>
   </configuration>
 </extension>
 ```
 
-Remember tyhe ID of a chain is prefixed with `javascript.` it is is a JS Automation chain. For example, if one of our examples above was named "CreateCustomDesignOnFileImport", you would write:
+Remember the ID of a chain is prefixed with `javascript.` it is is a JS Automation chain. For example, if one of our examples above was named "CreateCustomDesignOnFileImport" and you also set a folder importer call back named "FolderImporterCallback", you would write:
+
+```
+<extension target="nuxeo.filemanager.automation.FileImporterAutomationService"
+           point="configuration">
+  <configuration>
+    <defaultChain>javascript.CreateCustomDesignOnFileImport</defaultChain>
+    <folderImporterChain>javascript.FolderImporterCallback</folderImporterChain>
+  </configuration>
+</extension>
+```
+
+If you do not set a `folderImporter`, as in...
 
 ```
 <extension target="nuxeo.filemanager.automation.FileImporterAutomationService"
@@ -117,6 +225,8 @@ Remember tyhe ID of a chain is prefixed with `javascript.` it is is a JS Automat
   </configuration>
 </extension>
 ```
+
+... then default behavior applies (Nuxeo always creates a `Folder`) 
 
 
 ## FileManager and Priorities
@@ -136,6 +246,9 @@ Here, our plugin, by default:
           order="0">
     <filter>.*</filter>
   </plugin>
+  
+  <folderImporter name="FolderImporterWithAutomation"
+      class="nuxeo.filemanager.automation.FolderImporter" />
 </extension>
 ```
 
@@ -150,13 +263,20 @@ To change this behavior, copy/paste this declaration in your Studio project and 
           order="0">
     <filter>image/jpeg</filter>
   </plugin>
+  
+  <folderImporter name="FolderImporterWithAutomation"
+      class="nuxeo.filemanager.automation.FolderImporter" />
 </extension>
 ```
+
+**WARNING** Do not change the `folderImporter` declaration, unless you want to use another one or reset it to the default class.
+
 
 ## WARNINGS
 
 #### Errors in the Automation Chain Callback
 Make 100% sure the automation chain called by the plugin has no error. It is difficult to investigate automation errors in this context.
+
 
 #### Performance
 As this plugin calls automation, using it at time of massive import will slow the system (compared to no nuxeo-filemanager-automation plugin installed), because of the overall cost of calling Automation for every file.

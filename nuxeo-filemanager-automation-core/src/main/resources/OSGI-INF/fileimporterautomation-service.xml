@@ -11,10 +11,12 @@
     <object class="nuxeo.filemanager.automation.FileImporterAutomationDescriptor" />
   </extension-point>
 
-  <!-- Default contrib. No chain. The plugin will return null => Nuxeo will move to the next FileImporter plugin -->
+  <!-- Default contrib. No chain. For blobs, The plugin will return null => Nuxeo will move to the next FileImporter plugin. 
+    For containers, it will return null and the default AbstractFolderImporter is called -->
   <extension target="nuxeo.filemanager.automation.FileImporterAutomationService" point="configuration">
     <configuration>
       <defaultChain></defaultChain>
+      <folderImporterChain></folderImporterChain>
     </configuration>
   </extension>
 

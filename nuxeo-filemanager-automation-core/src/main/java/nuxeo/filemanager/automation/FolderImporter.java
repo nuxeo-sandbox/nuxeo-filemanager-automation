@@ -18,28 +18,34 @@
  */
 package nuxeo.filemanager.automation;
 
+import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
-import org.nuxeo.ecm.core.api.NuxeoException;
-import org.nuxeo.ecm.platform.filemanager.api.FileImporterContext;
-import org.nuxeo.ecm.platform.filemanager.service.extension.AbstractFileImporter;
+import org.nuxeo.ecm.platform.filemanager.service.extension.AbstractFolderImporter;
+import org.nuxeo.ecm.platform.types.TypeManager;
 import org.nuxeo.runtime.api.Framework;
 
 /**
  * This class is called by the File Manager, and declared in the XML extension.
- * It follows the File Manager logic and returns either a document or null.
+ * It follows the File Manager logic and returns either a Folderish or null.
  * 
  * @since 10.10
  */
-public class FileManagerAutomationPlugin extends AbstractFileImporter {
-
-    private static final long serialVersionUID = 1L;
-
+public class FolderImporter extends AbstractFolderImporter {
+    
     @Override
-    public DocumentModel createOrUpdate(FileImporterContext context) throws NuxeoException {
-
+    public DocumentModel create(CoreSession documentManager, String fullname, String path, boolean overwrite,
+            TypeManager typeManager) {
+        
         FileImporterAutomationService service = Framework.getService(FileImporterAutomationService.class);
-
-        return service.createOrUpdate(context);
+        DocumentModel folderish = service.createFolderish(documentManager, fullname, path, overwrite, typeManager);
+        
+        // Contrary to the FileManager service, we must return a DocumentModel, cannot return null
+        // (aka: We must create a default document by default)
+        if(folderish != null) {
+            return folderish;
+        }
+        
+        return super.create(documentManager, fullname, path, overwrite, typeManager);
     }
 
 }

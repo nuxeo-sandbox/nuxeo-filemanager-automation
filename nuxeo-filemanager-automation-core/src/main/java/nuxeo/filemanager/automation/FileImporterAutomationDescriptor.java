@@ -29,9 +29,16 @@ public class FileImporterAutomationDescriptor {
 
     @XNode("defaultChain")
     protected String chainId;
+    
+    @XNode("folderImporterChain")
+    protected String folderImporterChain;
 
     public String getChainId() {
         return chainId;
+    }
+
+    public String getFolderImporterChain() {
+        return folderImporterChain;
     }
 
 }

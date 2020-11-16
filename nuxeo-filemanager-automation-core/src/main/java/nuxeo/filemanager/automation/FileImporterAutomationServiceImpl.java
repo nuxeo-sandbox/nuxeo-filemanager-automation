@@ -1,3 +1,21 @@
+/*
+ * (C) Copyright 2020 Nuxeo (http://nuxeo.com/) and others.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Contributors:
+ *     Thibaud Arguillere
+ */
 package nuxeo.filemanager.automation;
 
 import java.io.IOException;
@@ -9,7 +27,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.AutomationService;
-import org.nuxeo.ecm.automation.OperationChain;
 import org.nuxeo.ecm.automation.OperationContext;
 import org.nuxeo.ecm.automation.OperationException;
 import org.nuxeo.ecm.automation.core.util.DocumentHelper;
@@ -20,6 +37,8 @@ import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.core.api.PathRef;
 import org.nuxeo.ecm.platform.filemanager.api.FileImporterContext;
+import org.nuxeo.ecm.platform.filemanager.utils.FileManagerUtils;
+import org.nuxeo.ecm.platform.types.TypeManager;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.ComponentContext;
 import org.nuxeo.runtime.model.ComponentInstance;
@@ -36,7 +55,15 @@ public class FileImporterAutomationServiceImpl extends DefaultComponent implemen
 
     protected FileImporterAutomationDescriptor descriptor;
 
-    protected int noConfigCount = 0;
+    // Avoid flooding the log with WARNS if no callback chains are provided
+    // Example: user provided a folderImporter callback, but no filemanager callback
+    // => Warning will be displayed for all and every file drag and dropped (unless
+    // the dev. chaged the priority and the pattern)
+    boolean logNoConfigDone = false;
+
+    boolean logNoFileManagerCBChainDone = false;
+
+    boolean logNoFolderManagerCBChainDone = false;
 
     /**
      * Component activated notification.
@@ -89,27 +116,64 @@ public class FileImporterAutomationServiceImpl extends DefaultComponent implemen
         // Logic to do when unregistering any contribution
     }
 
+    protected boolean hasConfiguration() {
+
+        if (descriptor == null) {
+            if (!logNoConfigDone) {
+                log.warn("No configuration contributed => not doing anything, letting Nuxeo decides");
+                logNoConfigDone = true;
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    protected boolean hasAFileImporterChain() {
+
+        if (!hasConfiguration()) {
+            return false;
+        }
+
+        String chainId = descriptor.getChainId();
+        if (StringUtils.isBlank(chainId)) {
+            if (!logNoFileManagerCBChainDone) {
+                log.warn(
+                        "No chain ID provided for the File Importer => not doing anything when importing files (Nuxeo will call the next file importer plugin)");
+                logNoFileManagerCBChainDone = true;
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    protected boolean hasAFolderImporterChain() {
+
+        if (!hasConfiguration()) {
+            return false;
+        }
+
+        String folderChainId = descriptor.getFolderImporterChain();
+        if (StringUtils.isBlank(folderChainId)) {
+            if (!logNoFolderManagerCBChainDone) {
+                log.warn("No chain ID provided for Folder Importer => default behavior will apply.");
+                logNoFolderManagerCBChainDone = true;
+            }
+            return false;
+        }
+
+        return true;
+    }
+
     @Override
     public DocumentModel createOrUpdate(FileImporterContext context) throws NuxeoException {
 
-        if (descriptor == null) {
-            if ((noConfigCount % 50) == 0) {
-                log.warn(
-                        "No configuration contributed => not doing anything (Nuxeo will call the next file importer plugin)");
-            }
-            noConfigCount += 1;
+        if (!hasAFileImporterChain()) {
             return null;
         }
 
-        String chainId = descriptor.chainId;
-        if (StringUtils.isBlank(chainId)) {
-            if ((noConfigCount % 50) == 0) {
-                log.warn("No chain ID provided => not doing anything (Nuxeo will call the next file importer plugin)");
-            }
-            noConfigCount += 1;
-            return null;
-        }
-
+        String chainId = descriptor.getChainId();
         DocumentModel doc = null;
 
         PathRef parentRef = new PathRef(context.getParentPath());
@@ -126,7 +190,7 @@ public class FileImporterAutomationServiceImpl extends DefaultComponent implemen
 
         try {
             blob = (Blob) as.run(octx, chainId, params);
-            String resultStr = (String) octx.get(CALLBACK_CTX_VAR_NAME);
+            String resultStr = (String) octx.get(CALLBACK_FILEIMPORTER_CTX_VAR_NAME);
             if (StringUtils.isBlank(resultStr)) {
                 return null;
             }
@@ -167,9 +231,45 @@ public class FileImporterAutomationServiceImpl extends DefaultComponent implemen
             doc = session.createDocument(doc);
 
         } catch (OperationException | IOException e) {
-            throw new NuxeoException("Failed to run the callback chain", e);
+            throw new NuxeoException("Failed to run the FileManager callback chain <" + chainId + ">", e);
         }
 
         return doc;
+    }
+
+    @Override
+    public DocumentModel createFolderish(CoreSession session, String fullname, String path, boolean overwrite,
+            TypeManager typeManager) {
+
+        if (!hasAFolderImporterChain()) {
+            return null;
+        }
+
+        String chainId = descriptor.getFolderImporterChain();
+        DocumentModel folderish = null;
+
+        // =========================================================
+        log.warn("fullname\n" + fullname + "\npath:\n" + path);
+        // =========================================================
+
+        // Doing as the default fileManagerService, cleaning up
+        String title = FileManagerUtils.fetchFileName(fullname);
+
+        // See interface => assumes current user has access to the parent
+        PathRef parentRef = new PathRef(path);
+        DocumentModel parentDoc = session.getDocument(parentRef);
+
+        AutomationService as = Framework.getService(AutomationService.class);
+        OperationContext octx = new OperationContext(session);
+        octx.setInput(parentDoc);
+        Map<String, Object> params = new HashMap<>();
+        params.put(CALLBACK_PARAM_FOLDERISH_TITLE, title);
+        try {
+            folderish = (DocumentModel) as.run(octx, chainId, params);
+        } catch (OperationException e) {
+            throw new NuxeoException("Failed to run the FileManager callback chain <" + chainId + ">", e);
+        }
+
+        return folderish;
     }
 }
