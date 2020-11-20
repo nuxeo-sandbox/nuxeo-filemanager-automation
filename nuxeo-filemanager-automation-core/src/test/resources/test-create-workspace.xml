@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name="uxeo.filemanager.automation.test.create.workspaceInDomain">
+
+  <!-- Override default contrib -->
+  <!--  testing only folderImporter here -->
+  <require>nuxeo.filemanager.automation.FileImporterAutomationService</require>
+  <extension target="nuxeo.filemanager.automation.FileImporterAutomationService" point="configuration">
+    <configuration>
+      <defaultChain></defaultChain>
+       <folderImporterChain>javascript.testReturnWorkspaceInDomain</folderImporterChain>
+    </configuration>
+  </extension>
+
+  <extension target="org.nuxeo.automation.scripting.internals.AutomationScriptingComponent" point="operation">
+    <scriptedOperation id="javascript.testReturnWorkspaceInDomain">
+      <inputType>document</inputType>
+      <outputType>document</outputType>
+      <category>javascript</category>
+      <param name="title" type="string"/>
+      <description></description>
+      <script><![CDATA[function run(input, params) {
+        // Create a Workspace only if the parent is a Domain, else, reurns null
+        var folderish = null;
+        if(input.type === "Domain") {
+          folderish = Document.Create(
+            input, {
+              'type': "Workspace",
+              'name': params.title,
+              'properties': {
+                "dc:title": params.title,
+              }
+            }
+          );
+        }
+        
+        return folderish;
+      
+      }]]></script>
+    </scriptedOperation>
+  </extension>
+
+</component>

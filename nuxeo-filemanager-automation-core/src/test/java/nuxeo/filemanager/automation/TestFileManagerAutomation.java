@@ -18,10 +18,11 @@
  */
 package nuxeo.filemanager.automation;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.File;
-import java.io.IOException;
 
 import javax.inject.Inject;
 
@@ -38,7 +39,6 @@ import org.nuxeo.ecm.core.test.DefaultRepositoryInit;
 import org.nuxeo.ecm.core.test.annotations.Granularity;
 import org.nuxeo.ecm.core.test.annotations.RepositoryConfig;
 import org.nuxeo.ecm.platform.filemanager.api.FileImporterContext;
-import org.nuxeo.ecm.platform.filemanager.api.FileManager;
 import org.nuxeo.runtime.test.runner.Deploy;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
@@ -56,9 +56,6 @@ public class TestFileManagerAutomation {
 
     @Inject
     protected CoreSession coreSession;
-
-    @Inject
-    protected FileManager fileManager;
 
     @Inject
     protected FileImporterAutomationService fileManagerAutomation;
@@ -90,22 +87,6 @@ public class TestFileManagerAutomation {
                                                          .build();
 
         return context;
-    }
-
-    @Test
-    public void shouldReturnNulWhenNoChainContributed() throws Exception {
-
-        FileImporterContext context = buildContextForTestFile(folder);
-
-        // Our service should return null
-        DocumentModel doc = fileManagerAutomation.createOrUpdate(context);
-        assertNull(doc);
-
-        // But the whole FileManager service should create a "File"
-        doc = fileManager.createOrUpdateDocument(context);
-        assertNotNull(doc);
-        assertEquals("File", doc.getType());
-
     }
 
     @Test
@@ -143,6 +124,37 @@ public class TestFileManagerAutomation {
         assertEquals("THE TITLE", doc.getTitle());
         String desc = (String) doc.getPropertyValue("dc:description");
         assertEquals("THE DESC", desc);
+
+    }
+
+    /*
+     * WARNING: This tests the service only, not Nuxeo creating a Folderish via Nuxeo Drive.
+     */
+    @Test
+    @Deploy("org.nuxeo.ecm.automation.scripting")
+    @Deploy("nuxeo.filemanager.automation.nuxeo-filemanager-automation-core:test-create-workspace.xml")
+    public void testCreateFolderishReturnsNullIfNotInADomain() throws Exception {
+        
+        DocumentModel doc = fileManagerAutomation.createFolderish(coreSession, "The Folder", "/", false, null);
+        assertNull(doc);
+
+    }
+
+    /*
+     * WARNING: This tests the service only, not Nuxeo creating a Folderish via Nuxeo Drive.
+     */
+    @Test
+    @Deploy("org.nuxeo.ecm.automation.scripting")
+    @Deploy("nuxeo.filemanager.automation.nuxeo-filemanager-automation-core:test-create-workspace.xml")
+    public void testCreateFolderishCreatesWorkspaceInDomain() throws Exception {
+        
+        DocumentModel domain = coreSession.createDocumentModel("/", "domain", "Domain");
+        domain = coreSession.createDocument(domain);
+        
+        DocumentModel doc = fileManagerAutomation.createFolderish(coreSession, "The Workspace", "/domain", false, null);
+        assertNotNull(doc);
+        assertEquals("Workspace", doc.getType());
+        assertEquals("The Workspace", doc.getTitle());
 
     }
 
