@@ -248,10 +248,6 @@ public class FileImporterAutomationServiceImpl extends DefaultComponent implemen
         String chainId = descriptor.getFolderImporterChain();
         DocumentModel folderish = null;
 
-        // =========================================================
-        log.warn("fullname\n" + fullname + "\npath:\n" + path);
-        // =========================================================
-
         // Doing as the default fileManagerService, cleaning up
         String title = FileManagerUtils.fetchFileName(fullname);
 
