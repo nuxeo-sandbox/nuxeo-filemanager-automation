@@ -120,7 +120,7 @@ function run(input, params) {
 
   var folderishDoc = null;
   
-  if(input.path.indexOf("/Designs" > -1) {
+  if(input.path.indexOf("/Designs" > -1)) {
     folderishDoc = Document.Create(
 	   input, {
 	     'type': "DesignsContainer",
