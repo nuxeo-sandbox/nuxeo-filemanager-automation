@@ -25,9 +25,8 @@ import javax.inject.Inject;
 
 @RunWith(FeaturesRunner.class)
 @Features({ PlatformFeature.class })
-@Deploy("org.nuxeo.ecm.platform.types.api")
-@Deploy("org.nuxeo.ecm.platform.types.core")
-@Deploy("org.nuxeo.ecm.platform.filemanager.core")
+@Deploy("org.nuxeo.ecm.platform.types")
+@Deploy("org.nuxeo.ecm.platform.filemanager")
 @Deploy("nuxeo.filemanager.automation.nuxeo-filemanager-automation-core")
 public class TestFileImporterAutomationService {
 

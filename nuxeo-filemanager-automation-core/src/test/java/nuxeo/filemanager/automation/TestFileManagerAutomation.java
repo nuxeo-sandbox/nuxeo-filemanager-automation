@@ -46,9 +46,8 @@ import org.nuxeo.runtime.test.runner.FeaturesRunner;
 @RunWith(FeaturesRunner.class)
 @Features(AutomationFeature.class)
 @RepositoryConfig(init = DefaultRepositoryInit.class, cleanup = Granularity.METHOD)
-@Deploy("org.nuxeo.ecm.platform.types.api")
-@Deploy("org.nuxeo.ecm.platform.types.core")
-@Deploy("org.nuxeo.ecm.platform.filemanager.core")
+@Deploy("org.nuxeo.ecm.platform.types")
+@Deploy("org.nuxeo.ecm.platform.filemanager")
 @Deploy("nuxeo.filemanager.automation.nuxeo-filemanager-automation-core")
 public class TestFileManagerAutomation {
 
