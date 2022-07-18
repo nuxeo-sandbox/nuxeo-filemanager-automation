@@ -63,6 +63,7 @@
           <artifact groupId="nuxeo-studio" />
           <!-- Filter out your artifacts using their groupId for instance -->
           <artifact groupId="nuxeo.filemanager.automation*" />
+          <artifact groupId="com.google.protobuf"/>
         </excludes>
       </artifact:set>
     </copy>
