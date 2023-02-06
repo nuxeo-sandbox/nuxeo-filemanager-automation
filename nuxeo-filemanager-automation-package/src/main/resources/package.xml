@@ -16,11 +16,7 @@
   <production-state>testing</production-state>
   <supported>false</supported>
   <platforms>
-    <!--
     <platform>lts-@NUXEO_TARGET_VERSION@</platform>
-    Assume it's ok for any lts2021 version
-    -->
-    <platform>lts-2021.*</platform>
   </platforms>
   <!-- Dependencies on other packages -->
   <!-- <dependencies> -->
