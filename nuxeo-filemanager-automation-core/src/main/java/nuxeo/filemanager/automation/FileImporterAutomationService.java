@@ -27,21 +27,21 @@ import org.nuxeo.ecm.platform.types.TypeManager;
 public interface FileImporterAutomationService {
 
     // Only for FileImporter
-    public static final String CALLBACK_FILEIMPORTER_CTX_VAR_NAME = "FileImporterAutomation_Result";
+    String CALLBACK_FILEIMPORTER_CTX_VAR_NAME = "FileImporterAutomation_Result";
 
-    public static final String CALLBACK_PARAM_PARENT_PATH = "parent_path";
+    String CALLBACK_PARAM_PARENT_PATH = "parent_path";
 
-    public static final String CALLBACK_PARAM_PARENT_TYPE = "parent_type";
+    String CALLBACK_PARAM_PARENT_TYPE = "parent_type";
 
     // Only for FolderImporter
-    public static final String CALLBACK_PARAM_FOLDERISH_TITLE = "title";
+    String CALLBACK_PARAM_FOLDERISH_TITLE = "title";
 
     // Used only by the FileManager (not folderImporter). If null or "" => no creation, move to next importer plugin
     // (FileImporter)
-    public static final String CALLBACK_RESULT_DOCTYPE = "docType";
+    String CALLBACK_RESULT_DOCTYPE = "docType";
 
     // Optional, and only for FileImporter (not FolderImporter)
-    public static final String CALLBACK_RESULT_PROPERTIES = "properties";
+    String CALLBACK_RESULT_PROPERTIES = "properties";
 
     /**
      * Returns a created or updated document based on the given {@code context}. Will call the automation chain set in
@@ -65,7 +65,7 @@ public interface FileImporterAutomationService {
      * @throws NuxeoException
      * @since 10.10
      */
-    public DocumentModel createOrUpdate(FileImporterContext context) throws NuxeoException;
+    DocumentModel createOrUpdate(FileImporterContext context) throws NuxeoException;
 
     /**
      * Returns a newly created Folderish document based on the given parameters. Will call the automation chain set in
@@ -85,7 +85,7 @@ public interface FileImporterAutomationService {
      * @return
      * @since 10.10
      */
-    public DocumentModel createFolderish(CoreSession session, String fullname, String path, boolean overwrite,
+    DocumentModel createFolderish(CoreSession session, String fullname, String path, boolean overwrite,
             TypeManager typeManager);
 
 }

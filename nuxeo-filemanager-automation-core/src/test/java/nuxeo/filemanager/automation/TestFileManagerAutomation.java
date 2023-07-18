@@ -81,11 +81,9 @@ public class TestFileManagerAutomation {
 
         Blob input = Blobs.createBlob(f, "application/pdf");
 
-        FileImporterContext context = FileImporterContext.builder(coreSession, input, parent.getPathAsString())
+        return FileImporterContext.builder(coreSession, input, parent.getPathAsString())
                                                          .overwrite(true)
                                                          .build();
-
-        return context;
     }
 
     @Test
@@ -132,7 +130,7 @@ public class TestFileManagerAutomation {
     @Test
     @Deploy("org.nuxeo.ecm.automation.scripting")
     @Deploy("nuxeo.filemanager.automation.nuxeo-filemanager-automation-core:test-create-workspace.xml")
-    public void testCreateFolderishReturnsNullIfNotInADomain() throws Exception {
+    public void testCreateFolderishReturnsNullIfNotInADomain() {
         
         DocumentModel doc = fileManagerAutomation.createFolderish(coreSession, "The Folder", "/", false, null);
         assertNull(doc);
@@ -145,7 +143,7 @@ public class TestFileManagerAutomation {
     @Test
     @Deploy("org.nuxeo.ecm.automation.scripting")
     @Deploy("nuxeo.filemanager.automation.nuxeo-filemanager-automation-core:test-create-workspace.xml")
-    public void testCreateFolderishCreatesWorkspaceInDomain() throws Exception {
+    public void testCreateFolderishCreatesWorkspaceInDomain() {
         
         DocumentModel domain = coreSession.createDocumentModel("/", "domain", "Domain");
         domain = coreSession.createDocument(domain);

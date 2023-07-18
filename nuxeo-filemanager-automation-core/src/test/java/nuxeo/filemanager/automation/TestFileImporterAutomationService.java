@@ -6,6 +6,8 @@ import static org.junit.Assert.assertNull;
 
 import java.io.File;
 
+import javax.inject.Inject;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,8 +22,6 @@ import org.nuxeo.ecm.platform.test.PlatformFeature;
 import org.nuxeo.runtime.test.runner.Deploy;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
-
-import javax.inject.Inject;
 
 @RunWith(FeaturesRunner.class)
 @Features({ PlatformFeature.class })
