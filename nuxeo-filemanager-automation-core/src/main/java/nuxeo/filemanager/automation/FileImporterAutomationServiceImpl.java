@@ -21,7 +21,6 @@ package nuxeo.filemanager.automation;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -50,20 +49,27 @@ public class FileImporterAutomationServiceImpl extends DefaultComponent implemen
 
     private static final Logger log = LogManager.getLogger(FileImporterAutomationServiceImpl.class);
 
+    /*
+     * ObjectMapper is thread-safe once configured (we only call readTree here),
+     * so it is safe to share a single static instance across all calls.
+     */
+    protected static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     public static final String EXT_POINT = "configuration";
 
     protected FileImporterAutomationDescriptor descriptor;
 
-    // Avoid flooding the log with WARNS if no callback chains are provided
-    // Example: user provided a folderImporter callback, but no filemanager callback
-    // => Warning will be displayed for all and every file drag and dropped (unless
-    // the dev. chaged the priority and the pattern)
-    boolean logNoConfigDone = false;
+    /*
+     * Avoid flooding the log with WARNS if no callback chains are provided.
+     * Example: user provided a folderImporter callback, but no filemanager callback
+     * => Warning would be displayed for every single file drag-and-dropped
+     * (unless the dev changed the priority and the pattern).
+     */
+    protected boolean logNoConfigDone = false;
 
-    boolean logNoFileManagerCBChainDone = false;
+    protected boolean logNoFileManagerCBChainDone = false;
 
-    boolean logNoFolderManagerCBChainDone = false;
-
+    protected boolean logNoFolderManagerCBChainDone = false;
 
     @Override
     public void registerContribution(Object contribution, String extensionPoint, ComponentInstance contributor) {
@@ -91,7 +97,7 @@ public class FileImporterAutomationServiceImpl extends DefaultComponent implemen
             return false;
         }
 
-        String chainId = descriptor.getChainId();
+        var chainId = descriptor.getChainId();
         if (StringUtils.isBlank(chainId)) {
             if (!logNoFileManagerCBChainDone) {
                 log.warn(
@@ -110,7 +116,7 @@ public class FileImporterAutomationServiceImpl extends DefaultComponent implemen
             return false;
         }
 
-        String folderChainId = descriptor.getFolderImporterChain();
+        var folderChainId = descriptor.getFolderImporterChain();
         if (StringUtils.isBlank(folderChainId)) {
             if (!logNoFolderManagerCBChainDone) {
                 log.warn("No chain ID provided for Folder Importer => default behavior will apply.");
@@ -123,44 +129,42 @@ public class FileImporterAutomationServiceImpl extends DefaultComponent implemen
     }
 
     @Override
-    public DocumentModel createOrUpdate(FileImporterContext context) throws NuxeoException {
+    public DocumentModel createOrUpdate(FileImporterContext context) {
 
         if (!hasAFileImporterChain()) {
             return null;
         }
 
-        String chainId = descriptor.getChainId();
+        var chainId = descriptor.getChainId();
         DocumentModel doc = null;
 
-        PathRef parentRef = new PathRef(context.getParentPath());
-        DocumentModel parentDoc = context.getSession().getDocument(parentRef);
-        Blob blob = context.getBlob();
-        CoreSession session = context.getSession();
+        var parentRef = new PathRef(context.getParentPath());
+        var parentDoc = context.getSession().getDocument(parentRef);
+        var blob = context.getBlob();
+        var session = context.getSession();
 
-        AutomationService as = Framework.getService(AutomationService.class);
-        OperationContext octx = new OperationContext(session);
-        octx.setInput(blob);
-        Map<String, Object> params = new HashMap<>();
+        var as = Framework.getService(AutomationService.class);
+        var params = new HashMap<String, Object>();
         params.put(CALLBACK_PARAM_PARENT_PATH, parentDoc.getPathAsString());
         params.put(CALLBACK_PARAM_PARENT_TYPE, parentDoc.getType());
 
-        try {
+        try (var octx = new OperationContext(session)) {
+            octx.setInput(blob);
             blob = (Blob) as.run(octx, chainId, params);
-            String resultStr = (String) octx.get(CALLBACK_FILEIMPORTER_CTX_VAR_NAME);
+            var resultStr = (String) octx.get(CALLBACK_FILEIMPORTER_CTX_VAR_NAME);
             if (StringUtils.isBlank(resultStr)) {
                 return null;
             }
 
-            // NOTICE: Using Jackson instead of default org.json.JSONObject because below,
-            // we use a converter to Nuxeo Properties, that expect a Jackson JSON
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode resultJson = objectMapper.readTree(resultStr);
+            // Using Jackson instead of the default org.json.JSONObject because below,
+            // we use a converter to Nuxeo Properties, which expects a Jackson JSON.
+            var resultJson = OBJECT_MAPPER.readTree(resultStr);
 
-            JsonNode docTypeJson = resultJson.get(CALLBACK_RESULT_DOCTYPE);
+            var docTypeJson = resultJson.get(CALLBACK_RESULT_DOCTYPE);
             if (docTypeJson == null) {
                 return null;
             }
-            String docType = docTypeJson.asText();
+            var docType = docTypeJson.asText();
             if (StringUtils.isBlank(docType)) {
                 return null;
             }
@@ -181,7 +185,7 @@ public class FileImporterAutomationServiceImpl extends DefaultComponent implemen
             doc.setPropertyValue("dc:title", title);
             doc.setPropertyValue("file:content", (Serializable) blob);
             if (propertiesJson != null) {
-                Properties props = new Properties(propertiesJson);
+                var props = new Properties(propertiesJson);
                 DocumentHelper.setProperties(session, doc, props);
             }
             doc = session.createDocument(doc);
@@ -201,22 +205,21 @@ public class FileImporterAutomationServiceImpl extends DefaultComponent implemen
             return null;
         }
 
-        String chainId = descriptor.getFolderImporterChain();
+        var chainId = descriptor.getFolderImporterChain();
         DocumentModel folderish = null;
 
-        // Doing as the default fileManagerService, cleaning up
-        String title = FileManagerUtils.fetchFileName(fullname);
+        // Doing as the default fileManagerService, cleaning up.
+        var title = FileManagerUtils.fetchFileName(fullname);
 
-        // See interface => assumes current user has access to the parent
-        PathRef parentRef = new PathRef(path);
-        DocumentModel parentDoc = session.getDocument(parentRef);
+        // See interface => assumes current user has access to the parent.
+        var parentRef = new PathRef(path);
+        var parentDoc = session.getDocument(parentRef);
 
-        AutomationService as = Framework.getService(AutomationService.class);
-        OperationContext octx = new OperationContext(session);
-        octx.setInput(parentDoc);
-        Map<String, Object> params = new HashMap<>();
+        var as = Framework.getService(AutomationService.class);
+        var params = new HashMap<String, Object>();
         params.put(CALLBACK_PARAM_FOLDERISH_TITLE, title);
-        try {
+        try (var octx = new OperationContext(session)) {
+            octx.setInput(parentDoc);
             folderish = (DocumentModel) as.run(octx, chainId, params);
         } catch (OperationException e) {
             throw new NuxeoException("Failed to run the FileManager callback chain <" + chainId + ">", e);

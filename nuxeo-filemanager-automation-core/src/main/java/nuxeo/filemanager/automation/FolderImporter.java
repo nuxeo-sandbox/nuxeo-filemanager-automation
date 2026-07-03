@@ -41,7 +41,7 @@ public class FolderImporter extends AbstractFolderImporter {
         
         // Contrary to the FileManager service, we must return a DocumentModel, cannot return null
         // (aka: We must create a default document by default)
-        if(folderish != null) {
+        if (folderish != null) {
             return folderish;
         }
         
