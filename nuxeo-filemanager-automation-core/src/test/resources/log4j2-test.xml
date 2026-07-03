@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+  <Appenders>
+    <Console name="CONSOLE" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d{HH:mm:ss,SSS} %-5p [%C{1}] %m%n" />
+      <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY" />
+    </Console>
+    <File name="FILE" fileName="target/trace.log" append="false">
+      <PatternLayout pattern="%d{HH:mm:ss,SSS} %-5p [%C{1}] %m%n" />
+    </File>
+  </Appenders>
+  <Loggers>
+    <Logger name="org.nuxeo" level="info" additivity="false">
+      <AppenderRef ref="FILE" />
+    </Logger>
+    <Root level="info">
+      <AppenderRef ref="CONSOLE" />
+    </Root>
+  </Loggers>
+</Configuration>
