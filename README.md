@@ -302,21 +302,20 @@ cd /path/to/nuxeo/bin/directory
 
 Notice: The `-s` is required because we are installing a *snapshot* plugin on  *release* platform.
 
-
 ## Support
 
-**These features are not part of the Nuxeo Production platform, they are not supported**
+**These features are not part of the Nuxeo Production platform.** They are provided for inspiration and as code samples. This is a moving project (no API maintenance, no deprecation process). If a solution proves broadly useful, it will be moved into the platform proper, not maintained here.
 
-These solutions are provided for inspiration and we encourage customers to use them as code samples and learning resources.
+## License
 
-This is a moving project (no API maintenance, no deprecation process, etc.) If any of these solutions are found to be useful for the Nuxeo Platform in general, they will be integrated directly into the platform, not maintained here.
-
-## Licensing
-
-[Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+[Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html)
 
 ## About Nuxeo
 
-Nuxeo dramatically improves how content-based applications are built, managed and deployed, making customers more agile, innovative and successful. Nuxeo provides a next generation, enterprise ready platform for building traditional and cutting-edge content-oriented applications. Combining a powerful application development environment with SaaS-based tools and a modular architecture, the Nuxeo Platform and Products provide clear business value to some of the most recognizable brands including Verizon, Electronic Arts, Sharp, FICO, the U.S. Navy, and Boeing. Nuxeo is headquartered in New York and Paris.
+Nuxeo Platform is an open source highly scalable, cloud-native, enterprise content management product with rich multimedia support, written in Java. Data can be stored in both SQL & NoSQL databases.
 
-More information is available at [www.nuxeo.com](http://www.nuxeo.com).  
+The development of the Nuxeo Platform is mostly done by Nuxeo employees with an open development model.
+
+The source code, documentation, roadmap, issue tracker, testing, benchmarks are all public.
+
+More information is available at [Hyland/Nuxeo](https://www.hyland.com/en/solutions/products/nuxeo-platform).
